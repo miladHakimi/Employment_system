@@ -33,6 +33,9 @@ class Applicant(AbstractBaseUser):
         blank=True,
     )
 
+    def __str__(self):
+        return self.firstName + " " + self.lastName
+
 
 class Employer(AbstractBaseUser):
     companyName = models.CharField(
@@ -59,3 +62,7 @@ class Employer(AbstractBaseUser):
         null=True,
         blank=True,
     )
+
+    def __str__(self):
+        return self.companyName
+
