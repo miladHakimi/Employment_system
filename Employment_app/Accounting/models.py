@@ -22,9 +22,10 @@ class Applicant(AbstractBaseUser):
         default=18,
         blank=True,
     )
-    GENDER_CHOICES = ['male', 'female']
+    GENDER_CHOICES = [('male', 'male'), ('female', 'female')]
     gender = models.CharField(
         choices=GENDER_CHOICES,
+        max_length=20
     )
     # todo: verify phone
     phone = models.CharField(
@@ -52,7 +53,7 @@ class Employer(AbstractBaseUser):
     )
     Address = models.CharField(
         _('Address'),
-        default=120,
+        max_length=200,
         blank=True,
     )
 
