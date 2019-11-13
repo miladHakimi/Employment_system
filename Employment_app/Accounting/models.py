@@ -15,6 +15,7 @@ class Applicant(AbstractBaseUser):
     )
     userName = models.CharField(
         _('user name'),
+        unique=True,
         max_length=50
     )
     age = models.IntegerField(
@@ -22,7 +23,7 @@ class Applicant(AbstractBaseUser):
         default=18,
         blank=True,
     )
-    GENDER_CHOICES = [('male', 'male'), ('female', 'female')]
+    GENDER_CHOICES = [('male', 'Male'), ('female', 'Female')]
     gender = models.CharField(
         choices=GENDER_CHOICES,
         max_length=20
@@ -49,6 +50,7 @@ class Employer(AbstractBaseUser):
     )
     userName = models.CharField(
         _('user name'),
+        unique=True,
         max_length=50
     )
     address = models.CharField(
