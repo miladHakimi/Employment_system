@@ -1,18 +1,13 @@
-from rest_framework import viewsets, status, generics
-from rest_framework.response import Response
-from django.conf import settings
-from rest_framework.views import APIView
+from rest_framework import generics
 
-from Accounting.serializers import ApplicantSerializer
-from .models import Applicant, Employer
+from Accounting.serializers import ApplicantSerializer, EmployerSerializer
 
 
 class ApplicantViewSet(generics.ListCreateAPIView):
-    """User ViewSet"""
-
     serializer_class = ApplicantSerializer
     queryset = ""
 
-    # def get(self, request, format=None):
-    #     # usernames = [user.username for user in User.objects.all()]
-    #     return Response({'status_code': 400}, status=status.HTTP_201_CREATED)
+
+class EmployerViewSet(generics.ListCreateAPIView):
+    serializer_class = EmployerSerializer
+    queryset = ""

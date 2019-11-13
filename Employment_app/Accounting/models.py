@@ -3,6 +3,8 @@ from django.utils import timezone
 from django.utils.translation import gettext_lazy as _
 from django.db import models
 
+from Accounting.validators import number
+
 
 class Applicant(AbstractBaseUser):
     firstName = models.CharField(
