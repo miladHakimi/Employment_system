@@ -25,8 +25,6 @@ class ApplicantSerializer(serializers.ModelSerializer):
         )
         model = Applicant
 
-    # todo: user and pass not the same
-
     def create(self, validated_data):
         try:
             validated_data['password'] = make_password(validated_data['password'])
@@ -42,6 +40,7 @@ class EmployerSerializer(serializers.ModelSerializer):
         style={'input_type': 'password'}
     )
     establishedYear = serializers.DateField(format="%d-%m-%Y", input_formats=['%d-%m-%Y', 'iso-8601'])
+    phone = serializers.CharField(max_length=11)
 
     class Meta:
         fields = (
@@ -51,11 +50,10 @@ class EmployerSerializer(serializers.ModelSerializer):
             'password',
             'address',
             'phone'
-
         )
         model = Employer
 
-    # todo: user and pass not the same
+    # todo: length of the password
 
     def create(self, validated_data):
         try:

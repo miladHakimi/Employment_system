@@ -1,3 +1,9 @@
-from django.core.validators import RegexValidator
+from django.core import validators
+from django.utils.translation import gettext_lazy as _
 
-number = RegexValidator(r'^[09][0-9]*$', 'Only digits are allowed.')
+
+class PhoneValidator(validators.RegexValidator):
+    regex = r'^0\d{10}$'
+    message = _(
+        'Invalid phone number. It should be an 11 digit number starting with "0".'
+    )

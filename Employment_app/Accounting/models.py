@@ -3,21 +3,24 @@ from django.utils import timezone
 from django.utils.translation import gettext_lazy as _
 from django.db import models
 
-from Accounting.validators import number
+from Accounting.validators import PhoneValidator
 
 
-class Applicant(AbstractBaseUser):
+class MyUser(AbstractBaseUser):
+    userName = models.CharField(
+        _('user name'),
+        unique=True,
+        max_length=50
+    )
+
+
+class Applicant(MyUser):
     firstName = models.CharField(
         _('first name'),
         max_length=50
     )
     lastName = models.CharField(
         _('last name'),
-        max_length=50
-    )
-    userName = models.CharField(
-        _('user name'),
-        unique=True,
         max_length=50
     )
     age = models.IntegerField(
@@ -41,7 +44,7 @@ class Applicant(AbstractBaseUser):
         return self.firstName + " " + self.lastName
 
 
-class Employer(AbstractBaseUser):
+class Employer(MyUser):
     companyName = models.CharField(
         _('company name'),
         max_length=50
@@ -49,11 +52,6 @@ class Employer(AbstractBaseUser):
     establishedYear = models.DateTimeField(
         _('established year'),
         default=timezone.now,
-    )
-    userName = models.CharField(
-        _('user name'),
-        unique=True,
-        max_length=50
     )
     address = models.CharField(
         _('Address'),
@@ -66,6 +64,7 @@ class Employer(AbstractBaseUser):
         max_length=11,
         null=True,
         blank=True,
+        validators=[PhoneValidator()]
     )
 
     def __str__(self):
