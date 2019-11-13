@@ -1,6 +1,7 @@
 .idea/*
 .idea
-
+.pyenv
+.pyenv/*
 # Django #
 *.log
 *.pot

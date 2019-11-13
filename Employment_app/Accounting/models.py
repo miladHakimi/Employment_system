@@ -17,7 +17,7 @@ class Applicant(AbstractBaseUser):
         _('user name'),
         max_length=50
     )
-    Age = models.IntegerField(
+    age = models.IntegerField(
         _('Age'),
         default=18,
         blank=True,
@@ -51,7 +51,7 @@ class Employer(AbstractBaseUser):
         _('user name'),
         max_length=50
     )
-    Address = models.CharField(
+    address = models.CharField(
         _('Address'),
         max_length=200,
         blank=True,
