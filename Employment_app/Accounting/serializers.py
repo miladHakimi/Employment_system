@@ -1,9 +1,11 @@
 from django.contrib.auth.hashers import make_password
+from django.db.models import Q
 from rest_framework import serializers
+from rest_framework.exceptions import ValidationError
 from rest_framework.response import Response
 from rest_framework.status import HTTP_406_NOT_ACCEPTABLE
 
-from Accounting.models import Applicant, Employer
+from Accounting.models import Applicant, Employer, User
 
 
 class ApplicantSerializer(serializers.ModelSerializer):
@@ -17,7 +19,7 @@ class ApplicantSerializer(serializers.ModelSerializer):
         fields = (
             'firstName',
             'lastName',
-            'userName',
+            'username',
             'password',
             'age',
             'gender'
@@ -27,7 +29,7 @@ class ApplicantSerializer(serializers.ModelSerializer):
 
     def create(self, validated_data):
         try:
-            validated_data['password'] = make_password(validated_data['password'])
+            validated_data['password'] = validated_data['password']
             return Applicant.objects.create(**validated_data)
         except:
             return Response(status=HTTP_406_NOT_ACCEPTABLE)
@@ -46,7 +48,7 @@ class EmployerSerializer(serializers.ModelSerializer):
         fields = (
             'companyName',
             'establishedYear',
-            'userName',
+            'username',
             'password',
             'address',
             'phone'
