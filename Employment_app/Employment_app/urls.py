@@ -15,15 +15,16 @@ Including another URLconf
 """
 from django.conf.urls import url
 from django.contrib import admin
+from django.urls import path, include
 from rest_framework.routers import DefaultRouter
-from Accounting.views import ApplicantViewSet, EmployerViewSet
+from rest_framework_jwt.views import obtain_jwt_token, refresh_jwt_token
 
 ROUTER = DefaultRouter()
-# ROUTER.register(r'user', ApplicantViewSet, base_name="user")
 
 urlpatterns = [
     url(r'^admin/', admin.site.urls),
-    url(r'^user/create/applicant', ApplicantViewSet.as_view()),
-    url(r'^user/create/employer', EmployerViewSet.as_view()),
+    path('user/', include('Accounting.urls')),
 
+    url(r'^api/fetch-token/', obtain_jwt_token),
+    url(r'^api/refresh-token/', refresh_jwt_token),
 ]
