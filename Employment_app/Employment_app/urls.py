@@ -15,7 +15,13 @@ Including another URLconf
 """
 from django.conf.urls import url
 from django.contrib import admin
+from rest_framework.routers import DefaultRouter
+from Accounting.views import ApplicantViewSet
+ROUTER = DefaultRouter()
+# ROUTER.register(r'user', ApplicantViewSet, base_name="user")
 
 urlpatterns = [
     url(r'^admin/', admin.site.urls),
+    url(r'^user/', ApplicantViewSet.as_view()),
+
 ]
