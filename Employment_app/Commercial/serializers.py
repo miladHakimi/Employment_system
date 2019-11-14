@@ -19,6 +19,7 @@ class AdSerializer(serializers.ModelSerializer):
     class Meta:
         model = Ad
         fields = (
+            'id',
             'title',
             'emp',
             'expDate',
