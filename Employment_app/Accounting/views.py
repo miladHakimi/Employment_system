@@ -5,20 +5,17 @@ from rest_framework import status
 from rest_framework.authentication import SessionAuthentication, BasicAuthentication
 from rest_framework.permissions import IsAuthenticated
 from rest_framework.response import Response
-from rest_framework.views import APIView
 
 from Accounting.models import Applicant, Employer, User
 from Accounting.serializers import ApplicantSerializer, EmployerSerializer, EmployerDashboardSerializer
 from Commercial.models import Ad
-from Commercial.serializers import AdSerializer
+from Commercial.serializers import AdSerializer, ApplySerializer
 
 FIRST_CAP_RE = re.compile('(.)([A-Z][a-z]+)')
 ALL_CAP_RE = re.compile('([a-z0-9])([A-Z])')
 
 
 def camel_to_snake(name):
-    """Turns camel case to snake case"""
-
     s = FIRST_CAP_RE.sub(r'\1_\2', name)
     return ALL_CAP_RE.sub(r'\1_\2', s).lower()
 
@@ -28,8 +25,6 @@ class RequestValidationError(object):
 
 
 def get_required_fields(request, field_keys):
-    """Returns required fields"""
-
     data = {}
     for key in field_keys:
         field = request.data.get(key)
@@ -55,23 +50,21 @@ class EmployerViewSet(generics.ListCreateAPIView):
     queryset = ""
 
 
-class ApplicantDashboardView(APIView):
-    """Remove User Avatar View"""
+class ApplicantDashboardView(generics.ListCreateAPIView):
+    serializer_class = ApplySerializer
+    permission_classes = [IsAuthenticated]
 
-    def get(self, request):
-        """Removes user avatar"""
+    def get_queryset(self):
+        return Ad.objects.all()
 
-        try:
-            request.user.firstName = "mili"
-            request.user.save()
-            return Response({
-                'status': 'OK',
-            })
-        except:
-            return Response({
-                'status': 'NOK',
-                'error': 'removing failed',
-            })
+    def post(self, request, *args, **kwargs):
+        ad = Ad.objects.get(id=request.data.get('id'))
+        user = Applicant.objects.get(username="2")
+        ad.applicants.add(user)
+        user.ads.add(ad)
+        ad.save()
+        user.save()
+        return Response(self.serializer_class(ad).data, status=status.HTTP_202_ACCEPTED)
 
 
 class EmployerDashboardViewSet(generics.ListCreateAPIView):

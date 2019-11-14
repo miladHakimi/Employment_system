@@ -2,10 +2,15 @@ import datetime
 
 from django.db import models
 
-from Accounting.models import Employer
+from Accounting.models import Employer, Applicant
 
 
 class Ad(models.Model):
+    applicants = models.ManyToManyField(
+        Applicant,
+        related_name="ads",
+        blank=True,
+    )
     employer = models.ForeignKey(
         Employer,
         related_name='ads',
@@ -36,3 +41,4 @@ class Ad(models.Model):
 
     def __str__(self):
         return self.title
+
