@@ -18,13 +18,13 @@ from django.contrib import admin
 from django.urls import path, include
 from rest_framework.routers import DefaultRouter
 from rest_framework_jwt.views import obtain_jwt_token, refresh_jwt_token
-
 ROUTER = DefaultRouter()
 
 urlpatterns = [
-    url(r'^admin/', admin.site.urls),
     path('user/', include('Accounting.urls')),
 
+    url(r'^admin/', admin.site.urls),
     url(r'^api/fetch-token/', obtain_jwt_token),
     url(r'^api/refresh-token/', refresh_jwt_token),
+
 ]

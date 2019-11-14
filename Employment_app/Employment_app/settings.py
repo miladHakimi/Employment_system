@@ -41,6 +41,8 @@ INSTALLED_APPS = [
     'Accounting.apps.AccountingConfig',
     'Employment_app',
     'rest_framework',
+    'Commercial.apps.CommercialConfig',
+
 ]
 
 MIDDLEWARE = [
@@ -101,19 +103,19 @@ AUTH_PASSWORD_VALIDATORS = [
     },
 ]
 
+
 REST_FRAMEWORK = {
     'DEFAULT_AUTHENTICATION_CLASSES': [
         'rest_framework.authentication.TokenAuthentication',
+        'rest_framework.authentication.SessionAuthentication',
     ],
 }
-AUTHENTICATION_BACKENDS = [
-    'django.contrib.auth.backends.AllowAllUsersModelBackend'
-]
-AUTH_USER_MODEL = 'Accounting.User'
 
+AUTH_USER_MODEL = 'Accounting.User'
 JWT_AUTH = {
     'JWT_EXPIRATION_DELTA': timedelta(days=1),
     'JWT_ALLOW_REFRESH': True,
+
 }
 
 # Internationalization
@@ -121,7 +123,7 @@ JWT_AUTH = {
 
 LANGUAGE_CODE = 'en-us'
 
-TIME_ZONE = 'UTC'
+TIME_ZONE = 'Asia/Tehran'
 
 USE_I18N = True
 
