@@ -1,5 +1,8 @@
 import re
 
+import django_filters
+from django_filters import rest_framework as filters
+from django_filters.rest_framework import DjangoFilterBackend
 from rest_framework import generics
 from rest_framework import status
 from rest_framework.authentication import SessionAuthentication, BasicAuthentication
@@ -51,12 +54,34 @@ class EmployerViewSet(generics.ListCreateAPIView):
     queryset = ""
 
 
-class ApplicantDashboardView(generics.ListCreateAPIView):
-    serializer_class = ApplySerializer
-    permission_classes = [IsAuthenticated]
+class UserFilter(django_filters.FilterSet):
+    LOOK_UP_CHOICES = [('programming', 'Programmer'), ('mechanical_engineering', 'Mechanical Engineer')]
 
-    def get_queryset(self):
-        return Ad.objects.all()
+    field = django_filters.ChoiceFilter(
+        choices=LOOK_UP_CHOICES,
+        field_name='fieldsOfExpertise',
+        lookup_expr='exact',
+    )
+
+    class Meta:
+        model = Ad
+        fields = ['field']
+
+
+def get_user():
+    return Applicant.objects.get(username="2")
+
+
+def get_id_list(user):
+    id_list = Request.objects.filter(applicant=user).values_list('ad_id', flat=True)
+    return id_list
+
+
+class ApplicantDashboardView(generics.ListCreateAPIView):
+    queryset = Ad.objects.all().exclude(id__in=get_id_list(get_user()))
+    serializer_class = ApplySerializer
+    filter_backends = (filters.DjangoFilterBackend,)
+    filterset_class = UserFilter
 
     def post(self, request, *args, **kwargs):
         self.user = Applicant.objects.get(username="2")
@@ -222,3 +247,10 @@ class AcceptedRequestsViewSet(generics.ListCreateAPIView):
     def get_queryset(self):
         self.user = Applicant.objects.get(username="2")
         return Appointment.objects.filter(applicant=self.user)
+
+
+class ProductList(generics.ListAPIView):
+    queryset = Ad.objects.all()
+    serializer_class = AdSerializer
+    filter_backends = [DjangoFilterBackend]
+    filterset_fields = ['fieldsOfExpertise']

@@ -42,7 +42,7 @@ INSTALLED_APPS = [
     'Employment_app',
     'rest_framework',
     'Commercial.apps.CommercialConfig',
-
+    'django_filters',
 ]
 
 MIDDLEWARE = [
@@ -109,6 +109,10 @@ REST_FRAMEWORK = {
         'rest_framework.authentication.TokenAuthentication',
         'rest_framework.authentication.SessionAuthentication',
     ],
+    'DEFAULT_FILTER_BACKENDS': [
+        'django_filters.rest_framework.DjangoFilterBackend'
+    ]
+
 }
 
 AUTH_USER_MODEL = 'Accounting.User'
