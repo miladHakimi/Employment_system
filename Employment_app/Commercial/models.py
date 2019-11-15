@@ -6,11 +6,6 @@ from Accounting.models import Employer, Applicant
 
 
 class Ad(models.Model):
-    applicants = models.ManyToManyField(
-        Applicant,
-        related_name="ads",
-        blank=True,
-    )
     employer = models.ForeignKey(
         Employer,
         related_name='ads',
@@ -44,17 +39,47 @@ class Ad(models.Model):
 
 
 class Request(models.Model):
-    applicant = models.OneToOneField(
+    applicant = models.ForeignKey(
         Applicant,
-        related_name='requests',
+        related_name='request',
         on_delete=models.SET_NULL,
+        null=True
     )
-    ad = models.OneToOneField(
+    ad = models.ForeignKey(
         Ad,
-        related_name='ads',
+        related_name='ad',
         on_delete=models.SET_NULL,
+        null=True,
     )
     accepted = models.BooleanField(
         null=True,
-        default=False
+        default=False,
+    )
+    rejected = models.BooleanField(
+        null=True,
+        default=False,
+    )
+
+    def __unicode__(self):
+        return self.id
+
+    def __str__(self):
+        return self.ad.title + "    " + self.applicant.username
+
+
+class Appointment(models.Model):
+    employer = models.ForeignKey(
+        Employer,
+        related_name='employer',
+        on_delete=models.SET_NULL,
+        null=True
+    )
+    applicant = models.ForeignKey(
+        Applicant,
+        related_name='aplicant',
+        on_delete=models.SET_NULL,
+        null=True
+    )
+    date = models.DateTimeField(
+        null=True
     )

@@ -7,8 +7,9 @@ from rest_framework.permissions import IsAuthenticated
 from rest_framework.response import Response
 
 from Accounting.models import Applicant, Employer, User
-from Accounting.serializers import ApplicantSerializer, EmployerSerializer, EmployerDashboardSerializer
-from Commercial.models import Ad
+from Accounting.serializers import ApplicantSerializer, EmployerSerializer, EmployerDashboardSerializer, \
+    RequestSerializer, AppointmentSerializer, PendingRequestSerializer, ApplicantAppointmentSerializer
+from Commercial.models import Ad, Request, Appointment
 from Commercial.serializers import AdSerializer, ApplySerializer
 
 FIRST_CAP_RE = re.compile('(.)([A-Z][a-z]+)')
@@ -58,12 +59,11 @@ class ApplicantDashboardView(generics.ListCreateAPIView):
         return Ad.objects.all()
 
     def post(self, request, *args, **kwargs):
+        self.user = Applicant.objects.get(username="2")
         ad = Ad.objects.get(id=request.data.get('id'))
-        user = Applicant.objects.get(username="2")
-        ad.applicants.add(user)
-        user.ads.add(ad)
-        ad.save()
-        user.save()
+        user = self.user
+        req = Request(ad=ad, applicant=user)
+        req.save()
         return Response(self.serializer_class(ad).data, status=status.HTTP_202_ACCEPTED)
 
 
@@ -110,12 +110,14 @@ class MakeAdViewSet(generics.ListCreateAPIView):
         return self.request.user
 
 
+#
 class UpdateAdView(generics.UpdateAPIView):
     permission_classes = (IsAuthenticated,)
     serializer_class = AdSerializer
-    user = User.objects.get(username="3")
+    user = ""
 
     def get(self, request, ad_id):
+        self.user = User.objects.get(username="3")
         ad = Ad.objects.get(id=ad_id)
         serializer = AdSerializer(ad)
         return Response(serializer.data, status.HTTP_201_CREATED)
@@ -136,3 +138,87 @@ class UpdateAdView(generics.UpdateAPIView):
             return Response(self.serializer_class(ad).data, status.HTTP_202_ACCEPTED)
 
         return Response({'status': 'Form data is not valid.'}, status.HTTP_400_BAD_REQUEST)
+
+
+class EmployerRequestReviewViewSet(generics.ListCreateAPIView):
+    permission_classes = (IsAuthenticated,)
+    serializer_class = RequestSerializer
+    user = ""
+
+    def get_queryset(self):
+        self.user = Employer.objects.get(username="3")
+        return Request.objects.filter(ad__employer=self.user, rejected=False, accepted=False)
+
+    def post(self, request, *args, **kwargs):
+        self.user = Employer.objects.get(username="3")
+        try:
+            id = request.data.get('id')
+            req = Request.objects.get(id=id)
+            date = request.data.get('date')
+        except:
+            return Response(status=status.HTTP_404_NOT_FOUND)
+        if self.user.id != req.ad.employer.id:
+            return Response(status=status.HTTP_401_UNAUTHORIZED)
+
+        req.rejected = True
+        req.save()
+
+        return Response({'remaining ads': self.get_queryset()}, status=status.HTTP_202_ACCEPTED)
+
+
+class EmployerSetAppointmentViewSet(generics.ListCreateAPIView):
+    permission_classes = (IsAuthenticated,)
+    serializer_class = AppointmentSerializer
+    user = ""
+
+    def get_queryset(self):
+        self.user = Employer.objects.get(username="3")
+        return Appointment.objects.filter(employer=self.user)
+
+    def post(self, request, *args, **kwargs):
+        self.user = Employer.objects.get(username="3")
+        date = ""
+        try:
+            id = request.data.get('id')
+            req = Request.objects.get(id=id)
+            date = request.data.get('date')
+        except:
+            return Response(status=status.HTTP_404_NOT_FOUND)
+        if self.user.id != req.ad.employer.id:
+            return Response(status=status.HTTP_401_UNAUTHORIZED)
+        if req.accepted or req.rejected:
+            return Response(status=status.HTTP_400_BAD_REQUEST)
+        req.accepted = True
+        req.save()
+        Appointment.objects.create(employer=self.user, applicant=req.applicant, date=date)
+        return Response(status=status.HTTP_201_CREATED)
+
+
+class PendingRequestsViewSet(generics.ListCreateAPIView):
+    permission_classes = (IsAuthenticated,)
+    serializer_class = PendingRequestSerializer
+    user = ""
+
+    def get_queryset(self):
+        self.user = Applicant.objects.get(username="2")
+        return Request.objects.filter(applicant=self.user, rejected=False, accepted=False)
+
+
+class RejectedRequestsViewSet(generics.ListCreateAPIView):
+    permission_classes = (IsAuthenticated,)
+    serializer_class = PendingRequestSerializer
+    user = ""
+
+    def get_queryset(self):
+        self.user = Applicant.objects.get(username="2")
+        return Request.objects.filter(applicant=self.user, rejected=True)
+
+
+class AcceptedRequestsViewSet(generics.ListCreateAPIView):
+    permission_classes = (IsAuthenticated,)
+    serializer_class = ApplicantAppointmentSerializer
+    user = ""
+
+    def get_queryset(self):
+        self.user = Applicant.objects.get(username="2")
+        return Appointment.objects.filter(applicant=self.user)

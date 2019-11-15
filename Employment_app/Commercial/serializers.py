@@ -1,7 +1,7 @@
 from rest_framework import serializers
 
 from Accounting.models import Employer, Applicant
-from Commercial.models import Ad
+from Commercial.models import Ad, Request
 
 
 class EmpSerializer(serializers.ModelSerializer):

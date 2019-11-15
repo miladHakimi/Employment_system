@@ -37,17 +37,6 @@ class MyUserManager(BaseUserManager):
 
 class User(AbstractBaseUser, PermissionsMixin):
     objects = MyUserManager()
-    groups = models.ManyToManyField(
-        Group,
-        verbose_name=_('groups'),
-        blank=True,
-        help_text=_(
-            'The groups this user belongs to. A user will get all permissions '
-            'granted to each of their groups.'
-        ),
-        related_name="chatuser_set",
-        related_query_name="user",
-    )
     user_permissions = models.ManyToManyField(
         Permission,
         verbose_name=_('user permissions'),
@@ -62,7 +51,7 @@ class User(AbstractBaseUser, PermissionsMixin):
         max_length=50,
     )
     USERNAME_FIELD = 'username'
-    user_type = ""
+    # user_type = ""
     is_active = models.BooleanField(default=True)
     is_staff = models.BooleanField(default=False)
 
@@ -77,7 +66,6 @@ class User(AbstractBaseUser, PermissionsMixin):
 
 
 class Applicant(User):
-    user_type = 'app'
     firstName = models.CharField(
         _('first name'),
         max_length=50

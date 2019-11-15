@@ -4,7 +4,7 @@ from rest_framework.response import Response
 from rest_framework.status import HTTP_406_NOT_ACCEPTABLE
 
 from Accounting.models import Applicant, Employer
-from Commercial.serializers import AdSerializer
+from Commercial.models import Request, Appointment
 
 
 class ApplicantSerializer(serializers.ModelSerializer):
@@ -70,3 +70,60 @@ class EmployerDashboardSerializer(serializers.ModelSerializer):
         fields = (
             '__all__',
         )
+
+
+class RequestSerializer(serializers.ModelSerializer):
+    ad = serializers.CharField(read_only=True)
+    applicant = serializers.CharField(read_only=True)
+    id = serializers.IntegerField()
+
+    class Meta:
+        model = Request
+        fields = (
+            'id',
+            'ad',
+            'applicant',
+        )
+
+
+class AppointmentSerializer(serializers.ModelSerializer):
+    id = serializers.CharField()
+
+    class Meta:
+        model = Appointment
+        fields = (
+            'id',
+            'date'
+
+        )
+
+
+class PendingRequestSerializer(serializers.ModelSerializer):
+    title = serializers.SerializerMethodField(read_only=True)
+
+    class Meta:
+        model = Request
+        fields = (
+            'id',
+            'title',
+        )
+
+    def get_title(self, obj):
+        return obj.ad.title
+
+
+class ApplicantAppointmentSerializer(serializers.ModelSerializer):
+    emp = serializers.SerializerMethodField(read_only=True)
+
+    class Meta:
+        model = Appointment
+        fields = (
+            'id',
+            'emp'
+        )
+        read_only_fields = (
+            'date',
+        )
+
+    def get_emp(self, obj):
+        return obj.employer.companyName
