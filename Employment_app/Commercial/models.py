@@ -42,3 +42,19 @@ class Ad(models.Model):
     def __str__(self):
         return self.title
 
+
+class Request(models.Model):
+    applicant = models.OneToOneField(
+        Applicant,
+        related_name='requests',
+        on_delete=models.SET_NULL,
+    )
+    ad = models.OneToOneField(
+        Ad,
+        related_name='ads',
+        on_delete=models.SET_NULL,
+    )
+    accepted = models.BooleanField(
+        null=True,
+        default=False
+    )
