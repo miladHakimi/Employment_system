@@ -2,7 +2,6 @@ import re
 
 import django_filters
 from django_filters import rest_framework as filters
-from django_filters.rest_framework import DjangoFilterBackend
 from rest_framework import generics
 from rest_framework import status
 from rest_framework.authentication import SessionAuthentication, BasicAuthentication
@@ -44,14 +43,13 @@ class ApplicantViewSet(generics.ListCreateAPIView):
     permission_classes = [IsAuthenticated, ]
 
     def get_queryset(self):
-        print("user = " + self.request.user.username)
         return Applicant.objects.all()
 
 
 class EmployerViewSet(generics.ListCreateAPIView):
     serializer_class = EmployerSerializer
     authentication_classes = [SessionAuthentication, BasicAuthentication]
-    queryset = ""
+    queryset = None
 
 
 class UserFilter(django_filters.FilterSet):
@@ -68,28 +66,23 @@ class UserFilter(django_filters.FilterSet):
         fields = ['field']
 
 
-def get_user():
-    return Applicant.objects.get(username="2")
-
-
-def get_id_list(user):
-    id_list = Request.objects.filter(applicant=user).values_list('ad_id', flat=True)
-    return id_list
-
-
 class ApplicantDashboardView(generics.ListCreateAPIView):
-    queryset = Ad.objects.all().exclude(id__in=get_id_list(get_user()))
+    permission_classes = [IsAuthenticated]
+
     serializer_class = ApplySerializer
     filter_backends = (filters.DjangoFilterBackend,)
     filterset_class = UserFilter
 
     def post(self, request, *args, **kwargs):
-        self.user = Applicant.objects.get(username="2")
         ad = Ad.objects.get(id=request.data.get('id'))
-        user = self.user
-        req = Request(ad=ad, applicant=user)
+        req = Request(ad=ad, applicant=self.request.user)
         req.save()
         return Response(self.serializer_class(ad).data, status=status.HTTP_202_ACCEPTED)
+
+    def get_queryset(self):
+        id_list = Request.objects.filter(applicant=self.request.user).values_list('ad_id', flat=True)
+        queryset = Ad.objects.all().exclude(id__in=id_list)
+        return queryset
 
 
 class EmployerDashboardViewSet(generics.ListCreateAPIView):
@@ -249,8 +242,13 @@ class AcceptedRequestsViewSet(generics.ListCreateAPIView):
         return Appointment.objects.filter(applicant=self.user)
 
 
-class ProductList(generics.ListAPIView):
-    queryset = Ad.objects.all()
-    serializer_class = AdSerializer
-    filter_backends = [DjangoFilterBackend]
-    filterset_fields = ['fieldsOfExpertise']
+class GetUserNameViewSet(generics.UpdateAPIView):
+    serializer_class = ApplicantSerializer
+    permission_classes = [IsAuthenticated]
+
+    def get(self, request):
+        # return Response(status=status.HTTP_400_BAD_REQUEST)
+        if not request.user.is_anonymous:
+            return Response({'name': request.user.username})
+        else:
+            return Response({'status': 'not logged'})

@@ -3,7 +3,7 @@ from django.conf.urls import url
 
 from .views import EmployerViewSet, ApplicantViewSet, ApplicantDashboardView, EmployerDashboardViewSet, MakeAdViewSet, \
     UpdateAdView, EmployerRequestReviewViewSet, EmployerSetAppointmentViewSet, PendingRequestsViewSet, \
-    RejectedRequestsViewSet, AcceptedRequestsViewSet
+    RejectedRequestsViewSet, AcceptedRequestsViewSet, GetUserNameViewSet
 
 urlpatterns = [
     url(r'^ads/(?P<ad_id>\d+)/$', UpdateAdView.as_view(), name='update-ad'),
@@ -17,6 +17,5 @@ urlpatterns = [
     url(r'^view_pending', PendingRequestsViewSet.as_view(), name='view-pend'),
     url(r'^view_rejected', RejectedRequestsViewSet.as_view(), name='view-rej'),
     url(r'^view_accepted', AcceptedRequestsViewSet.as_view(), name='view-acc'),
-
-    # url(r'^accept_req', EmployerAcceptRequestViewSet.as_view(), name='accepct-req'),
+    url(r'^status', GetUserNameViewSet.as_view(), name='user-stat'),
 ]

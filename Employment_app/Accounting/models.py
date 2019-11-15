@@ -1,5 +1,5 @@
 import datetime
-from datetime import timedelta
+from datetime import timedelta, datetime
 
 import jwt
 from django.contrib.auth.base_user import AbstractBaseUser, BaseUserManager
@@ -54,15 +54,19 @@ class User(AbstractBaseUser, PermissionsMixin):
     # user_type = ""
     is_active = models.BooleanField(default=True)
     is_staff = models.BooleanField(default=False)
-
-    def _generate_jwt_token(self):
-        dt = datetime.now() + timedelta(days=1)
-        token = jwt.encode({
-            'id': self.pk,
-            'exp': int(dt.strftime('%s'))
-        }, settings.SECRET_KEY, algorithm='HS256')
-
-        return token.decode('utf-8')
+    # print(token.key)
+    # def _generate_jwt_token(self):
+    #     dt = datetime.now() + timedelta(days=1)
+    #     token = jwt.encode({
+    #         'id': self.pk,
+    #         'exp': int(dt.strftime('%s'))
+    #     }, settings.SECRET_KEY, algorithm='HS256')
+    #
+    #     return token.decode('utf-8')
+    #
+    # @property
+    # def token(self):
+    #     return self._generate_jwt_token()
 
 
 class Applicant(User):
@@ -106,7 +110,7 @@ class Employer(User):
     )
     establishedYear = models.DateTimeField(
         _('established year'),
-        default=datetime.datetime.today(),
+        default=datetime.today(),
     )
     address = models.CharField(
         _('Address'),
