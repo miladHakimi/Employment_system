@@ -51,25 +51,13 @@ class User(AbstractBaseUser, PermissionsMixin):
         max_length=50,
     )
     USERNAME_FIELD = 'username'
-    # user_type = ""
+    user_type = ""
     is_active = models.BooleanField(default=True)
     is_staff = models.BooleanField(default=False)
-    # print(token.key)
-    # def _generate_jwt_token(self):
-    #     dt = datetime.now() + timedelta(days=1)
-    #     token = jwt.encode({
-    #         'id': self.pk,
-    #         'exp': int(dt.strftime('%s'))
-    #     }, settings.SECRET_KEY, algorithm='HS256')
-    #
-    #     return token.decode('utf-8')
-    #
-    # @property
-    # def token(self):
-    #     return self._generate_jwt_token()
 
 
 class Applicant(User):
+    user_type = 'app'
     firstName = models.CharField(
         _('first name'),
         max_length=50
