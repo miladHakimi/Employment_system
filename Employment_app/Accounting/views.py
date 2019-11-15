@@ -47,7 +47,7 @@ class ApplicantViewSet(generics.ListCreateAPIView):
 
 class EmployerViewSet(generics.ListCreateAPIView):
     serializer_class = EmployerSerializer
-    authentication_classes = [SessionAuthentication, BasicAuthentication]
+    permission_classes = [AllowAny, ]
     queryset = None
 
 
