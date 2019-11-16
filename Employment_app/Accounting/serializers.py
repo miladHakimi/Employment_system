@@ -132,4 +132,4 @@ class ApplicantAppointmentSerializer(serializers.ModelSerializer):
         return obj.employer.companyName
 
     def get_app(self, obj):
-        return obj.applicant.__str__()
+        return obj.applicant.username

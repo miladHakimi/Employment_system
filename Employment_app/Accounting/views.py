@@ -130,22 +130,23 @@ class UpdateAdView(generics.UpdateAPIView):
 
     def update(self, request, *args, **kwargs):
         ad_id = kwargs['ad_id']
+        ad = Ad.objects.get(id=ad_id)
         data = self.serializer_class(data=self.request.data)
 
         if data.is_valid(raise_exception=True):
-            ad = Ad.objects.get(id=ad_id)
             if ad.employer.id != self.request.user.id:
-                return Response({'status': 'You do not have access to this ad.'}, status.HTTP_401_UNAUTHORIZED)
+                return Response({'details': 'You do not have access to this ad.'}, status.HTTP_401_UNAUTHORIZED)
 
+        try:
             ad.title = data.data['title']
             ad.expDate = data.data['expDate']
             ad.fieldsOfExpertise = data.data['fieldsOfExpertise']
             ad.salary = data.data['salary']
             ad.save()
-
             return Response(self.serializer_class(ad).data, status.HTTP_202_ACCEPTED)
 
-        return Response({'status': 'Form data is not valid.'}, status.HTTP_400_BAD_REQUEST)
+        except:
+            return Response({'details': 'Form data is not valid.'}, status.HTTP_400_BAD_REQUEST)
 
 
 class EmployerRequestReviewViewSet(generics.ListCreateAPIView):
