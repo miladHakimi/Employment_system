@@ -1,10 +1,12 @@
 import re
+from datetime import date
 
 from rest_framework import generics
 from rest_framework import status
 from rest_framework.permissions import IsAuthenticated, AllowAny
 from rest_framework.response import Response
 
+from Accounting.filters import UserFilter
 from Accounting.models import Employer, Applicant
 from Accounting.serializers import ApplicantSerializer, EmployerSerializer, RequestSerializer, AppointmentSerializer, \
     PendingRequestSerializer, ApplicantAppointmentSerializer, ApplicantEditSerializer, EmployerEditSerializer
@@ -49,14 +51,15 @@ class EmployerViewSet(generics.ListCreateAPIView):
 
 
 class AdViewSet(generics.ListCreateAPIView):
-    permission_classes = [IsAuthenticated]
+    # permission_classes = [IsAuthenticated]
+    filterset_class = UserFilter
 
     def get_queryset(self):
         if self.request.user.is_employer():
             return Employer.objects.get(id=self.request.user.id).ads
         elif self.request.user.is_applicant():
             id_list = Request.objects.filter(applicant=self.request.user).values_list('ad_id', flat=True)
-            return Ad.objects.all().exclude(id__in=id_list)
+            return Ad.objects.filter(expDate__gte=date.today()).exclude(id__in=id_list).order_by(('expDate')).reverse()
 
     def get_serializer_class(self):
         if self.request.user.is_applicant():
@@ -78,6 +81,8 @@ class AdViewSet(generics.ListCreateAPIView):
             return Response({'detail': 'Unauthorised user'}, status=status.HTTP_401_UNAUTHORIZED)
         try:
             ad = Ad.objects.get(id=request.data.get('id'))
+            if ad.expDate < date.today():
+                return Response({'details': 'Ad is expired.'}, status.HTTP_406_NOT_ACCEPTABLE)
             app = Applicant.objects.get(id=self.request.user.id)
             if ad.id in app.request.values_list('ad_id', flat=True):
                 return Response({'detail': 'You have already submitted for this ad.'},

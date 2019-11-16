@@ -94,9 +94,12 @@ class Applicant(User):
     )
     cv = models.FileField(
         blank=True,
-        null=True
+        null=True,
     )
     objects = MyUserManager()
+
+    def get_cv(self):
+        return self.cv
 
     def __str__(self):
         return self.firstName + " " + self.lastName

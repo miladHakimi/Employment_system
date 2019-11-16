@@ -1,6 +1,6 @@
 import django_filters
 
-from Employment_system.Commercial.models import Ad
+from Commercial.models import Ad
 
 
 class UserFilter(django_filters.FilterSet):
@@ -10,7 +10,7 @@ class UserFilter(django_filters.FilterSet):
     field = django_filters.ChoiceFilter(
         choices=LOOK_UP_CHOICES,
         field_name='fieldsOfExpertise',
-        lookup_expr='exact',
+        lookup_expr='contains',
     )
 
     class Meta:

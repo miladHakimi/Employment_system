@@ -67,6 +67,9 @@ class Request(models.Model):
         default=False,
     )
 
+    def get_cv(self):
+        return self.applicant.get_cv()
+
     def __unicode__(self):
         return self.id
 
