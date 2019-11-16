@@ -7,3 +7,10 @@ class PhoneValidator(validators.RegexValidator):
     message = _(
         'Invalid phone number. It should be an 11 digit number starting with "0".'
     )
+
+
+class IsNumberValidator(validators.RegexValidator):
+    regex = r'^d{20}$'
+    message = _(
+        'Invalid salary amount.'
+    )

@@ -1,12 +1,11 @@
-import datetime
 import re
 from datetime import date
 
+from django.utils.dateparse import parse_datetime
 from rest_framework import generics
 from rest_framework import status
 from rest_framework.permissions import IsAuthenticated, AllowAny
 from rest_framework.response import Response
-from django.utils.dateparse import parse_datetime
 
 from Accounting.filters import UserFilter
 from Accounting.models import Employer, Applicant
@@ -156,13 +155,11 @@ class EmployerSetAppointmentViewSet(generics.ListCreateAPIView):
     def post(self, request, *args, **kwargs):
         if not self.request.user.is_employer():
             return Response({'detail': 'You do not have access to this page.'}, status=status.HTTP_401_UNAUTHORIZED)
-        day = ""
         try:
             id = request.data.get('id')
             req = Request.objects.get(id=id)
             day = request.data.get('date')
-            a = parse_datetime(day)
-            if a.year < date.today().year:
+            if parse_datetime(day).year < date.today().year:
                 return Response({'details': 'date is not valid'}, status=status.HTTP_400_BAD_REQUEST)
 
         except:

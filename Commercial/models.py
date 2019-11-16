@@ -3,6 +3,7 @@ import datetime
 from django.db import models
 
 from Accounting.models import Employer, Applicant
+from Accounting.validators import IsNumberValidator
 
 
 class Ad(models.Model):
@@ -34,7 +35,8 @@ class Ad(models.Model):
         max_length=20
     )
     salary = models.CharField(
-        max_length=10
+        max_length=10,
+        validators=[IsNumberValidator]
     )
     picture = models.ImageField(
         blank=True,
