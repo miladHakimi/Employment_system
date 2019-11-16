@@ -7,7 +7,7 @@ from rest_framework import status
 from rest_framework.permissions import IsAuthenticated, AllowAny
 from rest_framework.response import Response
 
-from Accounting.models import Employer
+from Accounting.models import Employer, Applicant
 from Accounting.serializers import ApplicantSerializer, EmployerSerializer, RequestSerializer, AppointmentSerializer, \
     PendingRequestSerializer, ApplicantAppointmentSerializer
 from Commercial.models import Ad, Request, Appointment
@@ -73,11 +73,16 @@ class ApplicantDashboardView(generics.ListCreateAPIView):
     filterset_class = UserFilter
 
     def post(self, request, *args, **kwargs):
-        if self.request.user.user_type is not 'app':
+        if not self.request.user.is_applicant():
             return Response({'detail': 'Unauthorised user'}, status=status.HTTP_401_UNAUTHORIZED)
         try:
             ad = Ad.objects.get(id=request.data.get('id'))
-            Request.objects.create(ad=ad, applicant=self.request.user)
+            app = Applicant.objects.get(id=self.request.user.id)
+            if ad.id in app.request.values_list('ad_id', flat=True):
+                return Response({'detail': 'You have already submitted for this ad.'},
+                                status=status.HTTP_400_BAD_REQUEST)
+
+            Request.objects.create(ad=ad, applicant=app)
             return Response(self.serializer_class(ad).data, status=status.HTTP_202_ACCEPTED)
         except:
             return Response({'detail': 'Ad not found'}, status=status.HTTP_404_NOT_FOUND)

@@ -29,7 +29,8 @@ class ApplicantSerializer(serializers.ModelSerializer):
     def create(self, validated_data):
         try:
             validated_data['password'] = make_password(validated_data['password'])
-            return Applicant.objects.create(**validated_data)
+            return Applicant.objects.create(**validated_data, user_type='app')
+
         except:
             return Response(status=HTTP_406_NOT_ACCEPTABLE)
 
@@ -59,10 +60,7 @@ class EmployerSerializer(serializers.ModelSerializer):
     def create(self, validated_data):
         try:
             validated_data['password'] = make_password(validated_data['password'])
-            a = Employer.objects.create(**validated_data)
-            a.user_type='emp'
-            a.save()
-            return a
+            return Employer.objects.create(**validated_data, user_type='emp')
         except:
             return Response(status=HTTP_406_NOT_ACCEPTABLE)
 
