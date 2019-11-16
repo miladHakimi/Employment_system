@@ -224,10 +224,9 @@ class AcceptedRequestsViewSet(generics.ListCreateAPIView):
 
 
 class EditProfileViewSet(generics.ListCreateAPIView):
-    # permission_classes = [IsAuthenticated]
+    permission_classes = [IsAuthenticated]
 
     def get_serializer_class(self):
-        self.request.user = Employer.objects.get(username="c")
         if self.request.user.is_applicant():
             return ApplicantEditSerializer
         elif self.request.user.is_employer():
@@ -235,7 +234,6 @@ class EditProfileViewSet(generics.ListCreateAPIView):
         return ApplicantEditSerializer
 
     def get_queryset(self):
-        self.request.user = Employer.objects.get(username="c")
         if self.request.user.is_employer():
             return Employer.objects.filter(id=self.request.user.id)
         if self.request.user.is_applicant():
@@ -244,8 +242,6 @@ class EditProfileViewSet(generics.ListCreateAPIView):
             return None
 
     def post(self, request, *args, **kwargs):
-        self.request.user = Employer.objects.get(username="c")
-
         if self.request.user.is_employer():
             return self.update_emp(request, *args, **kwargs)
         if self.request.user.is_applicant():

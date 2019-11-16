@@ -25,7 +25,10 @@ class Ad(models.Model):
         default=datetime.date.today,
         blank=True
     )
-    FIELD_CHOICES = [('programming', 'Programmer'), ('mechanical_engineering', 'Mechanical Engineer')]
+    FIELD_CHOICES = [
+        ('prog', 'Programmer'),
+        ('mech', 'Mechanical Engineer')
+    ]
     fieldsOfExpertise = models.CharField(
         choices=FIELD_CHOICES,
         max_length=20
@@ -33,9 +36,13 @@ class Ad(models.Model):
     salary = models.CharField(
         max_length=10
     )
+    picture = models.FileField(
+        blank=True,
+        null=True
+    )
 
     def __str__(self):
-        return self.title
+        return self.title + "   " + self.employer.companyName
 
 
 class Request(models.Model):
