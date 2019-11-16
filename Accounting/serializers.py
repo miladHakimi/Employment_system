@@ -38,6 +38,8 @@ class ApplicantSerializer(serializers.ModelSerializer):
 class ApplicantEditSerializer(serializers.ModelSerializer):
     class Meta:
         fields = (
+            'firstName',
+            'lastName',
             'fieldsOfExpertise',
             'cv',
             'phone'
@@ -54,6 +56,10 @@ class ApplicantEditSerializer(serializers.ModelSerializer):
 class EmployerEditSerializer(serializers.ModelSerializer):
     class Meta:
         fields = (
+            'companyName',
+            'establishedYear',
+            'address',
+            'phone',
             'fieldsOfExpertise',
 
         )
@@ -79,8 +85,6 @@ class EmployerSerializer(serializers.ModelSerializer):
             'phone'
         )
         model = Employer
-
-    # todo: length of the password
 
     def create(self, validated_data):
         try:
@@ -126,7 +130,7 @@ class AppointmentSerializer(serializers.ModelSerializer):
         )
 
     def get_employer(self, obj):
-        return obj.ad.employer.companyName
+        return obj.employer.companyName
 
 
 class PendingRequestSerializer(serializers.ModelSerializer):

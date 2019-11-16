@@ -152,7 +152,7 @@ class AppointmentViewSet(generics.ListCreateAPIView):
         if self.request.user.is_employer():
             return Appointment.objects.filter(employer_id=self.request.user.id)
         elif self.request.user.is_applicant():
-            return Request.objects.filter(applicant_id=self.request.user.id)
+            return Appointment.objects.filter(applicant_id=self.request.user.id)
         else:
             return None
 
@@ -175,7 +175,7 @@ class AppointmentViewSet(generics.ListCreateAPIView):
                 return Response({'details': 'date is not valid'}, status=status.HTTP_400_BAD_REQUEST)
 
         except:
-            return Response(status=status.HTTP_404_NOT_FOUND)
+            return Response({'details': 'inputs are invalid'}, status=status.HTTP_400_BAD_REQUEST)
         if self.request.user.id != req.ad.employer.id:
             return Response(status=status.HTTP_401_UNAUTHORIZED)
         if req.accepted or req.rejected:
@@ -192,11 +192,12 @@ class AppointmentViewSet(generics.ListCreateAPIView):
 
 class PendingRequestsViewSet(generics.ListCreateAPIView):
     permission_classes = (IsAuthenticated,)
-    serializer_class = PendingRequestSerializer
 
     def get_serializer_class(self):
         if self.request.user.is_employer():
             return RequestSerializer
+        if self.request.user.is_applicant():
+            return PendingRequestSerializer
 
     def get_queryset(self):
         if self.request.user.is_employer():
@@ -259,13 +260,28 @@ class EditProfileViewSet(generics.ListCreateAPIView):
         emp = Employer.objects.get(id=self.request.user.id)
         fields = emp.fieldsOfExpertise
         exp = request.data.get('fieldsOfExpertise')
+
         if exp is not None:
             fields.append(exp)
 
         if exp in self.request.user.fieldsOfExpertise:
             return Response({'details': 'You have already added this to your fields.'}, status.HTTP_400_BAD_REQUEST)
+
+        if request.data.get('companyName') is not None:
+            emp.companyName = request.data.get('companyName')
+
+        if request.data.get('establishedYear') is not None:
+            emp.establishedYear = request.data.get('establishedYear')
+
+        if request.data.get('address') is not None:
+            emp.address = request.data.get('address')
+
+        if request.data.get('phone') is not None:
+            emp.phone = request.data.get('phone')
+
         try:
             emp.fieldsOfExpertise = fields
+            emp.full_clean()
             emp.save()
             return Response({'details': 'user updated'}, status.HTTP_201_CREATED)
 
@@ -275,12 +291,7 @@ class EditProfileViewSet(generics.ListCreateAPIView):
     def update_app(self, request):
         app = Applicant.objects.get(id=self.request.user.id)
         fields = app.fieldsOfExpertise
-        cv = app.cv
-        phone = app.phone
-
         exp = request.data.get('fieldsOfExpertise')
-        newCv = request.data.get('cv')
-        new_phone = request.data.get('phone')
 
         if exp in self.request.user.fieldsOfExpertise:
             return Response({'details': 'You have already added this to your fields.'}, status.HTTP_400_BAD_REQUEST)
@@ -288,16 +299,19 @@ class EditProfileViewSet(generics.ListCreateAPIView):
         if exp is not None:
             fields.append(exp)
 
-        if newCv is not None:
-            cv = newCv
+        if request.data.get('cv') is not None:
+            app.cv = request.data.get('cv')
 
-        if new_phone is not None:
-            phone = new_phone
+        if request.data.get('phone') is not None:
+            app.phone = request.data.get('phone')
+
+        if request.data.get('firstName') is not None:
+            app.firstName = request.data.get('firstName')
+
+        if request.data.get('lastName') is not None:
+            app.firstName = request.data.get('lastName')
 
         try:
-            app.phone = phone
-            app.fieldsOfExpertise = fields
-            app.cv = cv
             app.full_clean()
             app.save()
             return Response({'details': 'user updated'}, status.HTTP_201_CREATED)
