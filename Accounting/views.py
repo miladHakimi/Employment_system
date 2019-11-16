@@ -1,16 +1,15 @@
 import re
 
-import django_filters
-from Accounting.models import Employer, Applicant
-from Accounting.serializers import ApplicantSerializer, EmployerSerializer, RequestSerializer, AppointmentSerializer, \
-    PendingRequestSerializer, ApplicantAppointmentSerializer
-from Commercial.models import Ad, Request, Appointment
-from Commercial.serializers import AdSerializer, ApplySerializer
-from django_filters import rest_framework as filters
 from rest_framework import generics
 from rest_framework import status
 from rest_framework.permissions import IsAuthenticated, AllowAny
 from rest_framework.response import Response
+
+from .models import Employer, Applicant
+from .serializers import ApplicantSerializer, EmployerSerializer, RequestSerializer, AppointmentSerializer, \
+    PendingRequestSerializer, ApplicantAppointmentSerializer
+from ..Commercial.models import Ad, Request, Appointment
+from ..Commercial.serializers import AdSerializer, ApplySerializer
 
 FIRST_CAP_RE = re.compile('(.)([A-Z][a-z]+)')
 ALL_CAP_RE = re.compile('([a-z0-9])([A-Z])')
@@ -47,21 +46,6 @@ class EmployerViewSet(generics.ListCreateAPIView):
     serializer_class = EmployerSerializer
     permission_classes = [AllowAny, ]
     queryset = ""
-
-
-class UserFilter(django_filters.FilterSet):
-    LOOK_UP_CHOICES = [('prog', 'Programmer'), ('mech', 'Mechanical Engineer'),
-                       ('metal', 'Metak Engineer')]
-
-    field = django_filters.ChoiceFilter(
-        choices=LOOK_UP_CHOICES,
-        field_name='fieldsOfExpertise',
-        lookup_expr='exact',
-    )
-
-    class Meta:
-        model = Ad
-        fields = ['field']
 
 
 class AdViewSet(generics.ListCreateAPIView):
