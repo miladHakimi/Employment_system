@@ -1,18 +1,17 @@
 from django.conf.urls import url
 
-from .views import EmployerViewSet, ApplicantViewSet, ApplicantDashboardView, MakeAdViewSet, \
+from .views import EmployerViewSet, ApplicantViewSet, \
     UpdateAdView, EmployerRequestReviewViewSet, EmployerSetAppointmentViewSet, PendingRequestsViewSet, \
-    RejectedRequestsViewSet, AcceptedRequestsViewSet
+    RejectedRequestsViewSet, AcceptedRequestsViewSet, AdViewSet
 
 urlpatterns = [
-    url(r'^update_ad/(?P<ad_id>\d+)/$', UpdateAdView.as_view(), name='update-ad'),
-    url(r'^create/applicant', ApplicantViewSet.as_view(), name='create-app'),
-    url(r'^create/employer', EmployerViewSet.as_view(), name='create-emp'),
-    url(r'^view_ads', ApplicantDashboardView.as_view(), name='app-view-ads'),
-    url(r'^make_ad', MakeAdViewSet.as_view(), name='make-ad'),
+    url(r'^ads/(?P<ad_id>\d+)/$', UpdateAdView.as_view(), name='update-ad'),
+    url(r'^ads/', AdViewSet.as_view(), name='update-ad'),
+    url(r'^applicants', ApplicantViewSet.as_view(), name='create-app'),
+    url(r'^employers', EmployerViewSet.as_view(), name='create-emp'),
     url(r'^req_list', EmployerRequestReviewViewSet.as_view(), name='list-apps'),
     url(r'^set_appointment', EmployerSetAppointmentViewSet.as_view(), name='set-app'),
-    url(r'^view_pending', PendingRequestsViewSet.as_view(), name='view-pend'),
-    url(r'^view_rejected', RejectedRequestsViewSet.as_view(), name='view-rej'),
-    url(r'^view_accepted', AcceptedRequestsViewSet.as_view(), name='view-acc'),
+    url(r'^pending', PendingRequestsViewSet.as_view(), name='view-pend'),
+    url(r'^rejected', RejectedRequestsViewSet.as_view(), name='view-rej'),
+    url(r'^accepted', AcceptedRequestsViewSet.as_view(), name='view-acc'),
 ]

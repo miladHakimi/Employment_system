@@ -1,17 +1,16 @@
 import re
 
 import django_filters
-from django_filters import rest_framework as filters
-from rest_framework import generics
-from rest_framework import status
-from rest_framework.permissions import IsAuthenticated, AllowAny
-from rest_framework.response import Response
-
 from Accounting.models import Employer, Applicant
 from Accounting.serializers import ApplicantSerializer, EmployerSerializer, RequestSerializer, AppointmentSerializer, \
     PendingRequestSerializer, ApplicantAppointmentSerializer
 from Commercial.models import Ad, Request, Appointment
 from Commercial.serializers import AdSerializer, ApplySerializer
+from django_filters import rest_framework as filters
+from rest_framework import generics
+from rest_framework import status
+from rest_framework.permissions import IsAuthenticated, AllowAny
+from rest_framework.response import Response
 
 FIRST_CAP_RE = re.compile('(.)([A-Z][a-z]+)')
 ALL_CAP_RE = re.compile('([a-z0-9])([A-Z])')
@@ -65,14 +64,32 @@ class UserFilter(django_filters.FilterSet):
         fields = ['field']
 
 
-class ApplicantDashboardView(generics.ListCreateAPIView):
+class AdViewSet(generics.ListCreateAPIView):
     permission_classes = [IsAuthenticated]
 
-    serializer_class = ApplySerializer
-    filter_backends = (filters.DjangoFilterBackend,)
-    filterset_class = UserFilter
+    def get_queryset(self):
+        if self.request.user.is_employer():
+            return Employer.objects.get(id=self.request.user.id).ads
+        elif self.request.user.is_applicant():
+            id_list = Request.objects.filter(applicant=self.request.user).values_list('ad_id', flat=True)
+            return Ad.objects.all().exclude(id__in=id_list)
+
+    def get_serializer_class(self):
+        if self.request.user.is_applicant():
+            return ApplySerializer
+        if self.request.user.is_employer():
+            return AdSerializer
+        return None
 
     def post(self, request, *args, **kwargs):
+        if self.request.user.is_employer():
+            return self.make_ad(request, args, kwargs)
+        elif self.request.user.is_applicant():
+            return self.apply_for_ad(request, args, kwargs)
+        else:
+            return Response({'detail': 'Unauthorised user'}, status=status.HTTP_401_UNAUTHORIZED)
+
+    def apply_for_ad(self, request, *args, **kwargs):
         if not self.request.user.is_applicant():
             return Response({'detail': 'Unauthorised user'}, status=status.HTTP_401_UNAUTHORIZED)
         try:
@@ -83,27 +100,11 @@ class ApplicantDashboardView(generics.ListCreateAPIView):
                                 status=status.HTTP_400_BAD_REQUEST)
 
             Request.objects.create(ad=ad, applicant=app)
-            return Response(self.serializer_class(ad).data, status=status.HTTP_202_ACCEPTED)
+            return Response(self.get_serializer_class()(ad).data, status=status.HTTP_202_ACCEPTED)
         except:
             return Response({'detail': 'Ad not found'}, status=status.HTTP_404_NOT_FOUND)
 
-    def get_queryset(self):
-        id_list = Request.objects.filter(applicant=self.request.user).values_list('ad_id', flat=True)
-        queryset = Ad.objects.all().exclude(id__in=id_list)
-        return queryset
-
-
-class MakeAdViewSet(generics.ListCreateAPIView):
-    serializer_class = AdSerializer
-    permission_classes = [IsAuthenticated]
-
-    def get_queryset(self):
-        if self.request.user.is_employer():
-            return self.request.user.ads
-        else:
-            return None
-
-    def post(self, request, *args, **kwargs):
+    def make_ad(self, request, *args, **kwargs):
         if not self.request.user.is_employer():
             return Response({'detail': 'Unauthorised user'}, status=status.HTTP_401_UNAUTHORIZED)
         try:
