@@ -59,7 +59,10 @@ class EmployerSerializer(serializers.ModelSerializer):
     def create(self, validated_data):
         try:
             validated_data['password'] = make_password(validated_data['password'])
-            return Employer.objects.create(**validated_data)
+            a = Employer.objects.create(**validated_data)
+            a.user_type='emp'
+            a.save()
+            return a
         except:
             return Response(status=HTTP_406_NOT_ACCEPTABLE)
 

@@ -1,38 +1,13 @@
-import datetime
-from datetime import timedelta, datetime
+from datetime import datetime
 
-import jwt
-from django.contrib.auth.base_user import AbstractBaseUser, BaseUserManager
+from django.contrib.auth.base_user import AbstractBaseUser
 from django.contrib.auth.models import PermissionsMixin, Group, Permission
 from django.db import models
 from django.utils.translation import gettext_lazy as _
 from rest_framework.authtoken.models import Token
 
+from Accounting.managers import MyUserManager
 from Accounting.validators import PhoneValidator
-from Employment_app import settings
-
-
-class MyUserManager(BaseUserManager):
-    def create_user(self, username, password=None):
-        if username is None:
-            raise TypeError('Users must have a username.')
-
-        user = self.model(username=username)
-        user.set_password(password)
-        user.save()
-
-        return user
-
-    def create_superuser(self, username, password):
-        if password is None:
-            raise TypeError('Superusers must have a password.')
-
-        user = self.create_user(username, password)
-        user.is_superuser = True
-        user.is_staff = True
-        user.save()
-
-        return user
 
 
 class User(AbstractBaseUser, PermissionsMixin):
@@ -51,13 +26,24 @@ class User(AbstractBaseUser, PermissionsMixin):
         max_length=50,
     )
     USERNAME_FIELD = 'username'
-    user_type = ""
+    USER_CHOICES = [('emp', 'Employer'), ('app', 'Applicant')]
+    user_type = models.CharField(
+        choices=USER_CHOICES,
+        blank=True,
+        null=True,
+        max_length=20
+    )
     is_active = models.BooleanField(default=True)
     is_staff = models.BooleanField(default=False)
 
+    def is_employer(self):
+        return self.user_type == 'emp'
+
+    def is_applicant(self):
+        return self.user_type == 'app'
+
 
 class Applicant(User):
-    user_type = 'app'
     firstName = models.CharField(
         _('first name'),
         max_length=50
@@ -76,11 +62,12 @@ class Applicant(User):
         choices=GENDER_CHOICES,
         max_length=20
     )
-    # todo: verify phone
     phone = models.CharField(
         max_length=11,
         null=True,
         blank=True,
+        validators=[PhoneValidator()]
+
     )
     objects = MyUserManager()
 
@@ -89,16 +76,19 @@ class Applicant(User):
 
 
 class Employer(User):
-    user_type = 'emp'
     objects = MyUserManager()
 
     companyName = models.CharField(
         _('company name'),
-        max_length=50
+        max_length=50,
+        blank=True,
+        null=True
     )
     establishedYear = models.DateTimeField(
         _('established year'),
         default=datetime.today(),
+        blank=True,
+        null=True
     )
     address = models.CharField(
         _('Address'),

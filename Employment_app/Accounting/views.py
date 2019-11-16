@@ -4,11 +4,10 @@ import django_filters
 from django_filters import rest_framework as filters
 from rest_framework import generics
 from rest_framework import status
-from rest_framework.authentication import SessionAuthentication, BasicAuthentication
 from rest_framework.permissions import IsAuthenticated, AllowAny
 from rest_framework.response import Response
 
-from Accounting.models import Applicant, Employer
+from Accounting.models import Employer
 from Accounting.serializers import ApplicantSerializer, EmployerSerializer, RequestSerializer, AppointmentSerializer, \
     PendingRequestSerializer, ApplicantAppointmentSerializer
 from Commercial.models import Ad, Request, Appointment
@@ -48,11 +47,12 @@ class ApplicantViewSet(generics.ListCreateAPIView):
 class EmployerViewSet(generics.ListCreateAPIView):
     serializer_class = EmployerSerializer
     permission_classes = [AllowAny, ]
-    queryset = None
+    queryset = ""
 
 
 class UserFilter(django_filters.FilterSet):
-    LOOK_UP_CHOICES = [('programming', 'Programmer'), ('mechanical_engineering', 'Mechanical Engineer')]
+    LOOK_UP_CHOICES = [('prog', 'Programmer'), ('mech', 'Mechanical Engineer'),
+                       ('metal', 'Metak Engineer')]
 
     field = django_filters.ChoiceFilter(
         choices=LOOK_UP_CHOICES,
@@ -217,4 +217,3 @@ class AcceptedRequestsViewSet(generics.ListCreateAPIView):
 
     def get_queryset(self):
         return Appointment.objects.filter(applicant_id=self.request.user.id)
-
