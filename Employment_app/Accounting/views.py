@@ -176,10 +176,10 @@ class EmployerSetAppointmentViewSet(generics.ListCreateAPIView):
     serializer_class = AppointmentSerializer
 
     def get_queryset(self):
-        return Appointment.objects.filter(employer=self.request.user)
+        return Appointment.objects.filter(employer_id=self.request.user.id)
 
     def post(self, request, *args, **kwargs):
-        if self.request.user.user_type != 'emp':
+        if not self.request.user.is_employer():
             return Response({'detail': 'You do not have access to this page.'}, status=status.HTTP_401_UNAUTHORIZED)
         date = ""
         try:
@@ -191,11 +191,14 @@ class EmployerSetAppointmentViewSet(generics.ListCreateAPIView):
         if self.request.user.id != req.ad.employer.id:
             return Response(status=status.HTTP_401_UNAUTHORIZED)
         if req.accepted or req.rejected:
-            return Response(status=status.HTTP_400_BAD_REQUEST)
+            return Response({'detail': 'You have handled this request before.'}, status=status.HTTP_400_BAD_REQUEST)
         req.accepted = True
-        req.save()
-        Appointment.objects.create(employer=self.request.user, applicant=req.applicant, date=date)
-        return Response(status=status.HTTP_201_CREATED)
+        try:
+            Appointment.objects.create(employer_id=self.request.user.id, applicant=req.applicant, date=date)
+            req.save()
+            return Response({'detail': 'submitted successfully'}, status=status.HTTP_201_CREATED)
+        except:
+            return Response({'detail': 'Input format is not valid.'}, status=status.HTTP_400_BAD_REQUEST)
 
 
 class PendingRequestsViewSet(generics.ListCreateAPIView):
