@@ -1,5 +1,7 @@
 import django_filters
 
+from Employment_system.Commercial.models import Ad
+
 
 class UserFilter(django_filters.FilterSet):
     LOOK_UP_CHOICES = [('prog', 'Programmer'), ('mech', 'Mechanical Engineer'),

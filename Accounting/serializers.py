@@ -35,6 +35,31 @@ class ApplicantSerializer(serializers.ModelSerializer):
             return Response(status=HTTP_406_NOT_ACCEPTABLE)
 
 
+class ApplicantEditSerializer(serializers.ModelSerializer):
+    class Meta:
+        fields = (
+            'fieldsOfExpertise',
+            'cv',
+            'phone'
+
+        )
+        model = Applicant
+
+    def update(self, instance, validated_data):
+        instance.age = validated_data['age']
+        instance.save()
+        return instance
+
+
+class EmployerEditSerializer(serializers.ModelSerializer):
+    class Meta:
+        fields = (
+            'fieldsOfExpertise',
+
+        )
+        model = Employer
+
+
 class EmployerSerializer(serializers.ModelSerializer):
     password = serializers.CharField(
         write_only=True,

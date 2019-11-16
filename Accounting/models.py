@@ -4,6 +4,7 @@ from django.contrib.auth.base_user import AbstractBaseUser
 from django.contrib.auth.models import PermissionsMixin, Group, Permission
 from django.db import models
 from django.utils.translation import gettext_lazy as _
+from multiselectfield import MultiSelectField
 from rest_framework.authtoken.models import Token
 
 from Accounting.managers import MyUserManager
@@ -26,15 +27,34 @@ class User(AbstractBaseUser, PermissionsMixin):
         max_length=50,
     )
     USERNAME_FIELD = 'username'
-    USER_CHOICES = [('emp', 'Employer'), ('app', 'Applicant')]
+
+    USER_CHOICES = [
+        ('emp', 'Employer'),
+        ('app', 'Applicant')
+    ]
     user_type = models.CharField(
         choices=USER_CHOICES,
         blank=True,
         null=True,
         max_length=20
     )
-    is_active = models.BooleanField(default=True)
-    is_staff = models.BooleanField(default=False)
+    is_active = models.BooleanField(
+        default=True
+    )
+    is_staff = models.BooleanField(
+        default=False
+    )
+
+    FIELD_CHOICES = [
+        ('prog', 'Programmer'),
+        ('mech', 'Mechanical Engineer')
+    ]
+    fieldsOfExpertise = MultiSelectField(
+        choices=FIELD_CHOICES,
+        max_length=20,
+        blank=True,
+        max_choices=3
+    )
 
     def is_employer(self):
         return self.user_type == 'emp'
@@ -57,7 +77,10 @@ class Applicant(User):
         default=18,
         blank=True,
     )
-    GENDER_CHOICES = [('male', 'Male'), ('female', 'Female')]
+    GENDER_CHOICES = [
+        ('male', 'Male'),
+        ('female', 'Female')
+    ]
     gender = models.CharField(
         choices=GENDER_CHOICES,
         max_length=20
@@ -68,6 +91,10 @@ class Applicant(User):
         blank=True,
         validators=[PhoneValidator()]
 
+    )
+    cv = models.FileField(
+        blank=True,
+        null=True
     )
     objects = MyUserManager()
 

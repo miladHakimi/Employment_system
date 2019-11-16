@@ -36,11 +36,11 @@ INSTALLED_APPS = [
     'django.contrib.messages',
     'django.contrib.staticfiles',
     # added by Milad!
-    # 'rest_framework.authtoken',
     'Accounting.apps.AccountingConfig',
+    'Commercial.apps.CommercialConfig',
+    'multiselectfield',
     'Employment_app',
     'rest_framework',
-    'Commercial.apps.CommercialConfig',
     'django_filters',
 ]
 
@@ -136,3 +136,7 @@ USE_TZ = True
 # https://docs.djangoproject.com/en/1.11/howto/static-files/
 
 STATIC_URL = '/static/'
+ENV_PATH = os.path.abspath(os.path.dirname(__file__))
+
+MEDIA_ROOT = os.path.join(ENV_PATH, 'media/')
+MEDIA_URL = 'media/'

@@ -5,11 +5,11 @@ from rest_framework import status
 from rest_framework.permissions import IsAuthenticated, AllowAny
 from rest_framework.response import Response
 
-from .models import Employer, Applicant
-from .serializers import ApplicantSerializer, EmployerSerializer, RequestSerializer, AppointmentSerializer, \
-    PendingRequestSerializer, ApplicantAppointmentSerializer
-from ..Commercial.models import Ad, Request, Appointment
-from ..Commercial.serializers import AdSerializer, ApplySerializer
+from Accounting.models import Employer, Applicant
+from Accounting.serializers import ApplicantSerializer, EmployerSerializer, RequestSerializer, AppointmentSerializer, \
+    PendingRequestSerializer, ApplicantAppointmentSerializer, ApplicantEditSerializer, EmployerEditSerializer
+from Commercial.models import Ad, Request, Appointment
+from Commercial.serializers import AdSerializer, ApplySerializer
 
 FIRST_CAP_RE = re.compile('(.)([A-Z][a-z]+)')
 ALL_CAP_RE = re.compile('([a-z0-9])([A-Z])')
@@ -221,3 +221,82 @@ class AcceptedRequestsViewSet(generics.ListCreateAPIView):
         elif self.request.user.is_applicant():
             return Request.objects.filter(ad__employer_id=self.request.user.id)
         return None
+
+
+class EditProfileViewSet(generics.ListCreateAPIView):
+    # permission_classes = [IsAuthenticated]
+
+    def get_serializer_class(self):
+        self.request.user = Employer.objects.get(username="c")
+        if self.request.user.is_applicant():
+            return ApplicantEditSerializer
+        elif self.request.user.is_employer():
+            return EmployerEditSerializer
+        return ApplicantEditSerializer
+
+    def get_queryset(self):
+        self.request.user = Employer.objects.get(username="c")
+        if self.request.user.is_employer():
+            return Employer.objects.filter(id=self.request.user.id)
+        if self.request.user.is_applicant():
+            return Applicant.objects.filter(id=self.request.user.id)
+        else:
+            return None
+
+    def post(self, request, *args, **kwargs):
+        self.request.user = Employer.objects.get(username="c")
+
+        if self.request.user.is_employer():
+            return self.update_emp(request, *args, **kwargs)
+        if self.request.user.is_applicant():
+            return self.update_app(request)
+
+    def update_emp(self, request, *args, **kwargs):
+        emp = Employer.objects.get(id=self.request.user.id)
+        fields = emp.fieldsOfExpertise
+        exp = request.data.get('fieldsOfExpertise')
+        if exp is not None:
+            fields.append(exp)
+
+        if exp in self.request.user.fieldsOfExpertise:
+            return Response({'details': 'You have already added this to your fields.'}, status.HTTP_400_BAD_REQUEST)
+        try:
+            emp.fieldsOfExpertise = fields
+            emp.save()
+            return Response({'details': 'user updated'}, status.HTTP_201_CREATED)
+
+        except:
+            return Response({'details': 'Inputs are not valid'}, status.HTTP_400_BAD_REQUEST)
+
+    def update_app(self, request):
+        app = Applicant.objects.get(id=self.request.user.id)
+        fields = app.fieldsOfExpertise
+        cv = app.cv
+        phone = app.phone
+
+        exp = request.data.get('fieldsOfExpertise')
+        newCv = request.data.get('cv')
+        new_phone = request.data.get('phone')
+
+        if exp in self.request.user.fieldsOfExpertise:
+            return Response({'details': 'You have already added this to your fields.'}, status.HTTP_400_BAD_REQUEST)
+
+        if exp is not None:
+            fields.append(exp)
+
+        if newCv is not None:
+            cv = newCv
+
+        if new_phone is not None:
+            phone = new_phone
+
+        try:
+            app.phone = phone
+            app.fieldsOfExpertise = fields
+            app.cv = cv
+            app.full_clean()
+            app.save()
+            return Response({'details': 'user updated'}, status.HTTP_201_CREATED)
+
+        except:
+            return Response({'details': 'Inputs are not valid'}, status.HTTP_400_BAD_REQUEST)
