@@ -98,12 +98,14 @@ class MakeAdViewSet(generics.ListCreateAPIView):
     permission_classes = [IsAuthenticated]
 
     def get_queryset(self):
-        if self.request.user.user_type == 'emp':
+        if self.request.user.is_employer():
             return self.request.user.ads
         else:
             return None
 
     def post(self, request, *args, **kwargs):
+        if not self.request.user.is_employer():
+            return Response({'detail': 'Unauthorised user'}, status=status.HTTP_401_UNAUTHORIZED)
         try:
             title = request.data.get('title')
             date = request.data.get('expDate')
@@ -116,11 +118,7 @@ class MakeAdViewSet(generics.ListCreateAPIView):
         except:
             return Response({'detail': 'inputs are not valid'}, status=status.HTTP_400_BAD_REQUEST)
 
-    def get_object(self):
-        return self.request.user
 
-
-#
 class UpdateAdView(generics.UpdateAPIView):
     permission_classes = (IsAuthenticated,)
     serializer_class = AdSerializer
