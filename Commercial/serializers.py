@@ -39,6 +39,7 @@ class ApplySerializer(serializers.ModelSerializer):
         model = Ad
         fields = (
             'id',
+            'title',
             'expDate',
             'fieldsOfExpertise',
             'salary',

@@ -1,3 +1,4 @@
+import datetime
 import re
 from datetime import date
 
@@ -5,6 +6,7 @@ from rest_framework import generics
 from rest_framework import status
 from rest_framework.permissions import IsAuthenticated, AllowAny
 from rest_framework.response import Response
+from django.utils.dateparse import parse_datetime
 
 from Accounting.filters import UserFilter
 from Accounting.models import Employer, Applicant
@@ -51,7 +53,7 @@ class EmployerViewSet(generics.ListCreateAPIView):
 
 
 class AdViewSet(generics.ListCreateAPIView):
-    # permission_classes = [IsAuthenticated]
+    permission_classes = [IsAuthenticated]
     filterset_class = UserFilter
 
     def get_queryset(self):
@@ -60,6 +62,7 @@ class AdViewSet(generics.ListCreateAPIView):
         elif self.request.user.is_applicant():
             id_list = Request.objects.filter(applicant=self.request.user).values_list('ad_id', flat=True)
             return Ad.objects.filter(expDate__gte=date.today()).exclude(id__in=id_list).order_by(('expDate')).reverse()
+        return None
 
     def get_serializer_class(self):
         if self.request.user.is_applicant():
@@ -143,31 +146,8 @@ class UpdateAdView(generics.UpdateAPIView):
             return Response({'details': 'Form data is not valid.'}, status.HTTP_400_BAD_REQUEST)
 
 
-class EmployerRequestReviewViewSet(generics.ListCreateAPIView):
-    permission_classes = (IsAuthenticated,)
-    serializer_class = RequestSerializer
-
-    def get_queryset(self):
-        return Request.objects.filter(ad__employer_id=self.request.user.id, rejected=False, accepted=False)
-
-    def post(self, request, *args, **kwargs):
-        try:
-            id = request.data.get('id')
-            req = Request.objects.get(id=id)
-            date = request.data.get('date')
-        except:
-            return Response(status=status.HTTP_404_NOT_FOUND)
-        if self.request.user.id != req.ad.employer.id:
-            return Response(status=status.HTTP_401_UNAUTHORIZED)
-
-        req.rejected = True
-        req.save()
-
-        return Response({'remaining ads': self.get_queryset()}, status=status.HTTP_202_ACCEPTED)
-
-
 class EmployerSetAppointmentViewSet(generics.ListCreateAPIView):
-    permission_classes = (IsAuthenticated,)
+    # permission_classes = (IsAuthenticated,)
     serializer_class = AppointmentSerializer
 
     def get_queryset(self):
@@ -176,11 +156,15 @@ class EmployerSetAppointmentViewSet(generics.ListCreateAPIView):
     def post(self, request, *args, **kwargs):
         if not self.request.user.is_employer():
             return Response({'detail': 'You do not have access to this page.'}, status=status.HTTP_401_UNAUTHORIZED)
-        date = ""
+        day = ""
         try:
             id = request.data.get('id')
             req = Request.objects.get(id=id)
-            date = request.data.get('date')
+            day = request.data.get('date')
+            a = parse_datetime(day)
+            if a.year < date.today().year:
+                return Response({'details': 'date is not valid'}, status=status.HTTP_400_BAD_REQUEST)
+
         except:
             return Response(status=status.HTTP_404_NOT_FOUND)
         if self.request.user.id != req.ad.employer.id:
@@ -189,7 +173,8 @@ class EmployerSetAppointmentViewSet(generics.ListCreateAPIView):
             return Response({'detail': 'You have handled this request before.'}, status=status.HTTP_400_BAD_REQUEST)
         req.accepted = True
         try:
-            Appointment.objects.create(employer_id=self.request.user.id, applicant=req.applicant, date=date)
+            Appointment.objects.create(employer_id=self.request.user.id, applicant=req.applicant, date=day)
+            req.full_clean()
             req.save()
             return Response({'detail': 'submitted successfully'}, status=status.HTTP_201_CREATED)
         except:
@@ -200,12 +185,29 @@ class PendingRequestsViewSet(generics.ListCreateAPIView):
     permission_classes = (IsAuthenticated,)
     serializer_class = PendingRequestSerializer
 
+    def get_serializer_class(self):
+        if self.request.user.is_employer():
+            return RequestSerializer
+
     def get_queryset(self):
         if self.request.user.is_employer():
             return Request.objects.filter(ad__employer_id=self.request.user.id, rejected=False, accepted=False)
         elif self.request.user.is_applicant():
             return Request.objects.filter(applicant_id=self.request.user.id, rejected=False, accepted=False)
         return None
+
+    def post(self, request, *args, **kwargs):
+        try:
+            id = request.data.get('id')
+            req = Request.objects.get(id=id)
+        except:
+            return Response(status=status.HTTP_404_NOT_FOUND)
+        if self.request.user.id != req.ad.employer.id:
+            return Response(status=status.HTTP_401_UNAUTHORIZED)
+
+        req.rejected = True
+        req.save()
+        return Response({'details': 'Rejected successfully'}, status=status.HTTP_202_ACCEPTED)
 
 
 class RejectedRequestsViewSet(generics.ListCreateAPIView):
