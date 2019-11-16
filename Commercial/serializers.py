@@ -34,14 +34,14 @@ class ApplySerializer(serializers.ModelSerializer):
     expDate = serializers.CharField(read_only=True)
     fieldsOfExpertise = serializers.CharField(read_only=True)
     salary = serializers.CharField(read_only=True)
-
+    picture = serializers.ImageField(read_only=True)
     class Meta:
         model = Ad
         fields = (
             'id',
-            'picture',
-            'title',
             'expDate',
             'fieldsOfExpertise',
             'salary',
+            'picture',
+
         )

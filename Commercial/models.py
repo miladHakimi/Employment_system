@@ -36,7 +36,7 @@ class Ad(models.Model):
     salary = models.CharField(
         max_length=10
     )
-    picture = models.FileField(
+    picture = models.ImageField(
         blank=True,
         null=True
     )
