@@ -153,7 +153,7 @@ class EmployerRequestReviewViewSet(generics.ListCreateAPIView):
     serializer_class = RequestSerializer
 
     def get_queryset(self):
-        return Request.objects.filter(ad__employer=self.request.user, rejected=False, accepted=False)
+        return Request.objects.filter(ad__employer_id=self.request.user.id, rejected=False, accepted=False)
 
     def post(self, request, *args, **kwargs):
         try:
@@ -206,7 +206,11 @@ class PendingRequestsViewSet(generics.ListCreateAPIView):
     serializer_class = PendingRequestSerializer
 
     def get_queryset(self):
-        return Request.objects.filter(applicant_id=self.request.user.id, rejected=False, accepted=False)
+        if self.request.user.is_employer():
+            return Request.objects.filter(ad__employer_id=self.request.user.id, rejected=False, accepted=False)
+        elif self.request.user.is_applicant():
+            return Request.objects.filter(applicant_id=self.request.user.id, rejected=False, accepted=False)
+        return None
 
 
 class RejectedRequestsViewSet(generics.ListCreateAPIView):
@@ -214,7 +218,11 @@ class RejectedRequestsViewSet(generics.ListCreateAPIView):
     serializer_class = PendingRequestSerializer
 
     def get_queryset(self):
-        return Request.objects.filter(applicant_id=self.request.user.id, rejected=True)
+        if self.request.user.is_employer():
+            return Request.objects.filter(ad__employer_id=self.request.user.id, rejected=True)
+        elif self.request.user.is_applicant():
+            return Request.objects.filter(applicant_id=self.request.user.id, rejected=True)
+        return None
 
 
 class AcceptedRequestsViewSet(generics.ListCreateAPIView):
@@ -222,4 +230,8 @@ class AcceptedRequestsViewSet(generics.ListCreateAPIView):
     serializer_class = ApplicantAppointmentSerializer
 
     def get_queryset(self):
-        return Appointment.objects.filter(applicant_id=self.request.user.id)
+        if self.request.user.is_employer():
+            return Appointment.objects.filter(employer_id=self.request.user.id)
+        elif self.request.user.is_applicant():
+            return Request.objects.filter(ad__employer_id=self.request.user.id)
+        return None
