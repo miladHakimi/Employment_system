@@ -129,6 +129,8 @@ class UpdateAdView(generics.UpdateAPIView):
             ad.expDate = data.data['expDate']
             ad.fieldsOfExpertise = data.data['fieldsOfExpertise']
             ad.salary = data.data['salary']
+            ad.picture = data.data['picture']
+            ad.full_clean()
             ad.save()
             return Response(self.serializer_class(ad).data, status.HTTP_202_ACCEPTED)
 
