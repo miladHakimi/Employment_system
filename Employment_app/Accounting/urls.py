@@ -5,7 +5,7 @@ from .views import EmployerViewSet, ApplicantViewSet, ApplicantDashboardView, Ma
     RejectedRequestsViewSet, AcceptedRequestsViewSet
 
 urlpatterns = [
-    url(r'^ads/(?P<ad_id>\d+)/$', UpdateAdView.as_view(), name='update-ad'),
+    url(r'^update_ad/(?P<ad_id>\d+)/$', UpdateAdView.as_view(), name='update-ad'),
     url(r'^create/applicant', ApplicantViewSet.as_view(), name='create-app'),
     url(r'^create/employer', EmployerViewSet.as_view(), name='create-emp'),
     url(r'^view_ads', ApplicantDashboardView.as_view(), name='app-view-ads'),
