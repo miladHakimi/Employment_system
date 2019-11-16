@@ -113,15 +113,20 @@ class RequestSerializer(serializers.ModelSerializer):
 
 
 class AppointmentSerializer(serializers.ModelSerializer):
-    id = serializers.CharField()
+    id = serializers.CharField(read_only=True)
+    employer = serializers.SerializerMethodField(read_only=True)
+    date = serializers.DateTimeField(read_only=True)
 
     class Meta:
         model = Appointment
         fields = (
             'id',
-            'date'
-
+            'employer',
+            'date',
         )
+
+    def get_employer(self, obj):
+        return obj.ad.employer.companyName
 
 
 class PendingRequestSerializer(serializers.ModelSerializer):
@@ -139,22 +144,16 @@ class PendingRequestSerializer(serializers.ModelSerializer):
 
 
 class ApplicantAppointmentSerializer(serializers.ModelSerializer):
-    emp = serializers.SerializerMethodField(read_only=True)
-    app = serializers.SerializerMethodField(read_only=True)
+    applicant = serializers.SerializerMethodField(read_only=True)
+    date = serializers.DateTimeField(read_only=True)
 
     class Meta:
         model = Appointment
         fields = (
             'id',
-            'emp',
-            'app',
-        )
-        read_only_fields = (
-            'date',
+            'applicant',
+            'date'
         )
 
-    def get_emp(self, obj):
-        return obj.employer.companyName
-
-    def get_app(self, obj):
+    def get_applicant(self, obj):
         return obj.applicant.username

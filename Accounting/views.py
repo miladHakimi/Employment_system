@@ -145,12 +145,24 @@ class UpdateAdView(generics.UpdateAPIView):
             return Response({'details': 'Form data is not valid.'}, status.HTTP_400_BAD_REQUEST)
 
 
-class EmployerSetAppointmentViewSet(generics.ListCreateAPIView):
-    # permission_classes = (IsAuthenticated,)
-    serializer_class = AppointmentSerializer
+class AppointmentViewSet(generics.ListCreateAPIView):
+    permission_classes = (IsAuthenticated,)
 
     def get_queryset(self):
-        return Appointment.objects.filter(employer_id=self.request.user.id)
+        if self.request.user.is_employer():
+            return Appointment.objects.filter(employer_id=self.request.user.id)
+        elif self.request.user.is_applicant():
+            return Request.objects.filter(applicant_id=self.request.user.id)
+        else:
+            return None
+
+    def get_serializer_class(self):
+        if self.request.user.is_applicant():
+            return AppointmentSerializer
+        elif self.request.user.is_employer():
+            return ApplicantAppointmentSerializer
+        else:
+            return None
 
     def post(self, request, *args, **kwargs):
         if not self.request.user.is_employer():
@@ -216,18 +228,6 @@ class RejectedRequestsViewSet(generics.ListCreateAPIView):
             return Request.objects.filter(ad__employer_id=self.request.user.id, rejected=True)
         elif self.request.user.is_applicant():
             return Request.objects.filter(applicant_id=self.request.user.id, rejected=True)
-        return None
-
-
-class AcceptedRequestsViewSet(generics.ListCreateAPIView):
-    permission_classes = (IsAuthenticated,)
-    serializer_class = ApplicantAppointmentSerializer
-
-    def get_queryset(self):
-        if self.request.user.is_employer():
-            return Appointment.objects.filter(employer_id=self.request.user.id)
-        elif self.request.user.is_applicant():
-            return Request.objects.filter(ad__employer_id=self.request.user.id)
         return None
 
 

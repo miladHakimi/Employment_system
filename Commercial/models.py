@@ -93,5 +93,6 @@ class Appointment(models.Model):
         null=True
     )
     date = models.DateTimeField(
+        blank=True,
         null=True,
     )
