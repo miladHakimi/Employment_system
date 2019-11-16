@@ -24,6 +24,7 @@ class AdSerializer(serializers.ModelSerializer):
             'expDate',
             'fieldsOfExpertise',
             'salary',
+            'picture',
         )
 
 
@@ -38,6 +39,7 @@ class ApplySerializer(serializers.ModelSerializer):
         model = Ad
         fields = (
             'id',
+            'picture',
             'title',
             'expDate',
             'fieldsOfExpertise',

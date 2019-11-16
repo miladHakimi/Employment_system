@@ -96,9 +96,11 @@ class AdViewSet(generics.ListCreateAPIView):
             date = request.data.get('expDate')
             expertise = request.data.get('fieldsOfExpertise')
             salary = request.data.get('salary')
+            picture = request.data.get('picture')
             user = Employer.objects.get(id=self.request.user.id)
 
-            Ad.objects.create(title=title, expDate=date, fieldsOfExpertise=expertise, salary=salary, employer=user)
+            Ad.objects.create(title=title, expDate=date, fieldsOfExpertise=expertise, salary=salary, employer=user,
+                              picture=picture)
             return Response({'detail': 'created'}, status=status.HTTP_201_CREATED)
         except:
             return Response({'detail': 'inputs are not valid'}, status=status.HTTP_400_BAD_REQUEST)
